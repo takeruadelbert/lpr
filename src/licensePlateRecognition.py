@@ -28,8 +28,11 @@ class LicensePlateRecognition:
         self.classes = open(self.classPath).read().strip().split("\n")
         self.colors = np.random.uniform(0, 255, size=(len(self.classes), 3))
 
-    def draw_bounding_box(self, img, class_id, confidence, x, y, x_plus_w, y_plus_h):
-        label = "{}: {:.4f}".format(str(self.classes[class_id]), confidence)
+    def draw_bounding_box(self, img, class_id, confidence, x, y, x_plus_w, y_plus_h, license_plate_number):
+        if license_plate_number is None:
+            label = "{}: {:.4f}".format(str(self.classes[class_id]), confidence)
+        else:
+            label = license_plate_number
         color = self.colors[class_id]
         cv2.rectangle(img, (x, y), (x_plus_w, y_plus_h), color, 2)
         cv2.putText(img, label, (x - 10, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
@@ -58,6 +61,8 @@ class LicensePlateRecognition:
         return cv2.dnn.NMSBoxes(boxes, confidences, conf_threshold, nms_threshold)
 
     def run(self):
+        detected_image = None
+
         net = cv2.dnn.readNet(self.weight, self.config)
         blob = cv2.dnn.blobFromImage(self.image, self.scale, (416, 416), (0, 0, 0), True, crop=False)
         net.setInput(blob)
@@ -75,12 +80,13 @@ class LicensePlateRecognition:
             y = box[1]
             w = box[2]
             h = box[3]
-            self.image = crop_bounding_box(self.image, round(x), round(y), round(x + w), round(y + h))
-
-        result = self.optical_character_recognition(self.image)
-        print('result = ', result)
+            detected_image = crop_bounding_box(self.image, round(x), round(y), round(x + w), round(y + h))
+            result = self.optical_character_recognition(detected_image)[0]
+            print('result = ', result)
+            self.draw_bounding_box(self.image, class_ids[i], confidences[i], round(x), round(y), round(x + w),
+                                   round(y + h), result)
 
         cv2.imshow("LPR Detection", self.image)
-        cv2.waitKey()
         cv2.imwrite("lpr-detection.jpg", self.image)
+        cv2.waitKey()
         cv2.destroyAllWindows()
