@@ -3,6 +3,7 @@ import easyocr
 from src.licensePlateRecognition import *
 
 if __name__ == "__main__":
+    print("Loading Reader ...")
     reader = easyocr.Reader(['id'], gpu=True)
 
     while True:
