@@ -1,6 +1,7 @@
+import os
+
 import cv2
 import numpy as np
-import os
 
 
 def crop_bounding_box(img, x, y, x_plus_w, y_plus_h):
@@ -15,9 +16,9 @@ def get_output_layers(net):
 
 class LicensePlateRecognition:
     scale = 0.00392  # 1 / 255
-    weight = os.getcwd() + "/yolo-obj_final.weights"
-    config = os.getcwd() + "/yolo-obj.cfg"
-    classPath = os.getcwd() + "/classes.txt"
+    weight = os.getcwd() + os.getenv("yolo-weight", "/yolo-obj_final.weights")
+    config = os.getcwd() + os.getenv("yolo-config", "/yolo-obj.cfg")
+    classPath = os.getcwd() + os.getenv("yolo-class", "/classes.txt")
     dataAllowList = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 
     def __init__(self, reader, image):
@@ -61,8 +62,6 @@ class LicensePlateRecognition:
         return cv2.dnn.NMSBoxes(boxes, confidences, conf_threshold, nms_threshold)
 
     def run(self):
-        detected_image = None
-
         net = cv2.dnn.readNet(self.weight, self.config)
         blob = cv2.dnn.blobFromImage(self.image, self.scale, (416, 416), (0, 0, 0), True, crop=False)
         net.setInput(blob)
