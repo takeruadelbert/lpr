@@ -39,7 +39,7 @@ class LicensePlateRecognition:
         cv2.putText(img, label, (x - 10, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
 
     def optical_character_recognition(self, img):
-        return self.reader.readtext(img, detail=0, allowlist=self.dataAllowList, paragraph=True, mag_ratio=3)
+        return self.reader.readtext(img, detail=0, allowlist=self.dataAllowList, paragraph=True, mag_ratio=3.5)
 
     def get_data_from_output_layer(self, outs, class_ids, confidences, boxes):
         conf_threshold = 0.5
