@@ -1,1 +1,15 @@
+pedicab
+motorcycle
+sedan
+minibus
+pick up
+bus
+truck
+trailer truck
 license plate
+license plate yellow
+license plate red
+license plate police
+license plate tni
+license plate white
+bentor

@@ -3,6 +3,8 @@ import os
 import cv2
 import numpy as np
 
+from src.value import LICENSE_PLATE_LABEL
+
 
 def crop_bounding_box(img, x, y, x_plus_w, y_plus_h):
     return img[y:y_plus_h, x:x_plus_w]
@@ -29,7 +31,7 @@ class LicensePlateRecognition:
         self.classes = open(self.classPath).read().strip().split("\n")
         self.colors = np.random.uniform(0, 255, size=(len(self.classes), 3))
 
-    def draw_bounding_box(self, img, class_id, confidence, x, y, x_plus_w, y_plus_h, license_plate_number):
+    def draw_bounding_box(self, img, class_id, confidence, x, y, x_plus_w, y_plus_h, license_plate_number=None):
         if license_plate_number is None:
             label = "{}: {:.4f}".format(str(self.classes[class_id]), confidence)
         else:
@@ -79,9 +81,12 @@ class LicensePlateRecognition:
             y = box[1]
             w = box[2]
             h = box[3]
-            detected_image = crop_bounding_box(self.image, round(x), round(y), round(x + w), round(y + h))
-            result = self.optical_character_recognition(detected_image)[0]
-            print('result = ', result)
+            class_label = self.classes[class_ids[i]]
+            result = None
+            if class_label.lower() == LICENSE_PLATE_LABEL:
+                detected_image = crop_bounding_box(self.image, round(x), round(y), round(x + w), round(y + h))
+                result = self.optical_character_recognition(detected_image)[0]
+                print('result = ', result)
             self.draw_bounding_box(self.image, class_ids[i], confidences[i], round(x), round(y), round(x + w),
                                    round(y + h), result)
 
