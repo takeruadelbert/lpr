@@ -35,7 +35,7 @@ class LicensePlateRecognition:
         if license_plate_number is None:
             label = "{}: {:.4f}".format(str(self.classes[class_id]), confidence)
         else:
-            label = license_plate_number
+            label = "{}: {}".format(str(self.classes[class_id]), license_plate_number)
         color = self.colors[class_id]
         cv2.rectangle(img, (x, y), (x_plus_w, y_plus_h), color, 2)
         cv2.putText(img, label, (x - 10, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
@@ -73,6 +73,10 @@ class LicensePlateRecognition:
         confidences = []
         boxes = []
         indices = self.get_data_from_output_layer(outs, class_ids, confidences, boxes)
+        output = {
+            "type": "unknown",
+            "license_plate_number": "undetected"
+        }
 
         for i in indices:
             i = i[0]
@@ -86,11 +90,14 @@ class LicensePlateRecognition:
             if class_label.lower() == LICENSE_PLATE_LABEL:
                 detected_image = crop_bounding_box(self.image, round(x), round(y), round(x + w), round(y + h))
                 result = self.optical_character_recognition(detected_image)[0]
-                print('result = ', result)
+                output["license_plate_number"] = result
+            else:
+                output["type"] = class_label
             self.draw_bounding_box(self.image, class_ids[i], confidences[i], round(x), round(y), round(x + w),
                                    round(y + h), result)
 
-        cv2.imshow("LPR Detection", self.image)
+        print("output = ", output)
+        # cv2.imshow("LPR Detection", self.image)
         cv2.imwrite("lpr-detection.jpg", self.image)
         cv2.waitKey()
         cv2.destroyAllWindows()
