@@ -3,7 +3,7 @@ import os
 import cv2
 import numpy as np
 
-from src.value import LICENSE_PLATE_LABEL
+from src.value import *
 
 
 def crop_bounding_box(img, x, y, x_plus_w, y_plus_h):
@@ -17,11 +17,9 @@ def get_output_layers(net):
 
 
 class LicensePlateRecognition:
-    scale = 0.00392  # 1 / 255
     weight = os.getcwd() + os.getenv("yolo-weight", "/yolo-obj_final.weights")
     config = os.getcwd() + os.getenv("yolo-config", "/yolo-obj.cfg")
     classPath = os.getcwd() + os.getenv("yolo-class", "/classes.txt")
-    dataAllowList = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 
     def __init__(self, reader, image):
         self.reader = reader
@@ -29,19 +27,18 @@ class LicensePlateRecognition:
         self.width = image.shape[1]
         self.height = image.shape[0]
         self.classes = open(self.classPath).read().strip().split("\n")
-        self.colors = np.random.uniform(0, 255, size=(len(self.classes), 3))
 
     def draw_bounding_box(self, img, class_id, confidence, x, y, x_plus_w, y_plus_h, license_plate_number=None):
         if license_plate_number is None:
             label = "{}: {:.4f}".format(str(self.classes[class_id]), confidence)
         else:
             label = "{}: {}".format(str(self.classes[class_id]), license_plate_number)
-        color = self.colors[class_id]
+        color = (213, 255, 0)
         cv2.rectangle(img, (x, y), (x_plus_w, y_plus_h), color, 2)
         cv2.putText(img, label, (x - 10, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
 
     def optical_character_recognition(self, img):
-        return self.reader.readtext(img, detail=0, allowlist=self.dataAllowList, paragraph=True, mag_ratio=3.5)
+        return self.reader.readtext(img, detail=0, allowlist=DATA_ALLOW_LIST, paragraph=True, mag_ratio=3.5)
 
     def get_data_from_output_layer(self, outs, class_ids, confidences, boxes):
         conf_threshold = 0.5
@@ -51,7 +48,7 @@ class LicensePlateRecognition:
                 scores = detection[5:]
                 class_id = np.argmax(scores)
                 confidence = scores[class_id]
-                if confidence > 0.5:
+                if confidence > CONFIDENCE_LIMIT:
                     center_x = int(detection[0] * self.width)
                     center_y = int(detection[1] * self.height)
                     w = int(detection[2] * self.width)
@@ -65,7 +62,7 @@ class LicensePlateRecognition:
 
     def run(self):
         net = cv2.dnn.readNet(self.weight, self.config)
-        blob = cv2.dnn.blobFromImage(self.image, self.scale, (416, 416), (0, 0, 0), True, crop=False)
+        blob = cv2.dnn.blobFromImage(self.image, DEFAULT_SCALE, (416, 416), (0, 0, 0), True, crop=False)
         net.setInput(blob)
         outs = net.forward(get_output_layers(net))
 
@@ -97,7 +94,4 @@ class LicensePlateRecognition:
                                    round(y + h), result)
 
         print("output = ", output)
-        # cv2.imshow("LPR Detection", self.image)
         cv2.imwrite("lpr-detection.jpg", self.image)
-        cv2.waitKey()
-        cv2.destroyAllWindows()
