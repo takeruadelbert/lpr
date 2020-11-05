@@ -71,8 +71,8 @@ class LicensePlateRecognition:
         boxes = []
         indices = self.get_data_from_output_layer(outs, class_ids, confidences, boxes)
         output = {
-            "type": "unknown",
-            "license_plate_number": "undetected"
+            "type": UNKNOWN_VEHICLE,
+            "license_plate_number": UNDETECTED
         }
 
         for i in indices:
