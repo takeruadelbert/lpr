@@ -21,12 +21,17 @@ def get_output_layers(net):
 
 
 class LicensePlateRecognition:
-    def __init__(self, reader, image):
+    def __init__(self, reader):
         self.reader = reader
+        self.image = None
+        self.width = None
+        self.height = None
+        self.classes = open(classPath).read().strip().split("\n")
+
+    def set_image(self, image):
         self.image = image
         self.width = image.shape[1]
         self.height = image.shape[0]
-        self.classes = open(classPath).read().strip().split("\n")
 
     def draw_bounding_box(self, img, class_id, confidence, x, y, x_plus_w, y_plus_h, license_plate_number=None):
         if license_plate_number is None:
@@ -93,4 +98,4 @@ class LicensePlateRecognition:
             self.draw_bounding_box(self.image, class_ids[i], confidences[i], round(x), round(y), round(x + w),
                                    round(y + h), result)
 
-        print("output = ", output)
+        return output
