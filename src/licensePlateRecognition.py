@@ -3,7 +3,11 @@ import os
 import cv2
 import numpy as np
 
-from src.value import *
+from misc.value import *
+
+weight = os.getcwd() + os.getenv("yolo-weight", "/yolo-obj_final.weights")
+config = os.getcwd() + os.getenv("yolo-config", "/yolo-obj.cfg")
+classPath = os.getcwd() + os.getenv("yolo-class", "/classes.txt")
 
 
 def crop_bounding_box(img, x, y, x_plus_w, y_plus_h):
@@ -17,16 +21,12 @@ def get_output_layers(net):
 
 
 class LicensePlateRecognition:
-    weight = os.getcwd() + os.getenv("yolo-weight", "/yolo-obj_final.weights")
-    config = os.getcwd() + os.getenv("yolo-config", "/yolo-obj.cfg")
-    classPath = os.getcwd() + os.getenv("yolo-class", "/classes.txt")
-
     def __init__(self, reader, image):
         self.reader = reader
         self.image = image
         self.width = image.shape[1]
         self.height = image.shape[0]
-        self.classes = open(self.classPath).read().strip().split("\n")
+        self.classes = open(classPath).read().strip().split("\n")
 
     def draw_bounding_box(self, img, class_id, confidence, x, y, x_plus_w, y_plus_h, license_plate_number=None):
         if license_plate_number is None:
@@ -61,7 +61,7 @@ class LicensePlateRecognition:
         return cv2.dnn.NMSBoxes(boxes, confidences, conf_threshold, nms_threshold)
 
     def run(self):
-        net = cv2.dnn.readNet(self.weight, self.config)
+        net = cv2.dnn.readNet(weight, config)
         blob = cv2.dnn.blobFromImage(self.image, DEFAULT_SCALE, (416, 416), (0, 0, 0), True, crop=False)
         net.setInput(blob)
         outs = net.forward(get_output_layers(net))
@@ -94,4 +94,3 @@ class LicensePlateRecognition:
                                    round(y + h), result)
 
         print("output = ", output)
-        cv2.imwrite("lpr-detection.jpg", self.image)
