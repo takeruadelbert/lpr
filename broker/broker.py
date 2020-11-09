@@ -5,6 +5,7 @@ from kafka import KafkaConsumer
 from kafka import KafkaProducer
 
 from helper.generalHelper import decode_base64_to_image, encode_image_to_base64
+from misc.value import *
 from src.licensePlateRecognition import *
 from storage.storage import api_post
 
@@ -38,8 +39,9 @@ class Broker:
             cv2.imwrite('{}'.format(DEFAULT_NAME_LPR_IMAGE_RESULT), image_origin)
             self.lpr.set_image(image_origin)
             result = self.lpr.run()
-            token = self.upload_lpr_image_result()
-            result['token'] = token
+            if result['type'] != UNKNOWN_VEHICLE and result['license_plate_number'] != UNDETECTED:
+                token = self.upload_lpr_image_result()
+                result['token'] = token
             produce_payload = {
                 'gate_id': gate_id,
                 'result': result,
