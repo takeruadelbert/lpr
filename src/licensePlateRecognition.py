@@ -5,9 +5,9 @@ import numpy as np
 
 from misc.value import *
 
-weight = os.getcwd() + os.getenv("yolo-weight", "/yolo-obj_final.weights")
-config = os.getcwd() + os.getenv("yolo-config", "/yolo-obj.cfg")
-classPath = os.getcwd() + os.getenv("yolo-class", "/classes.txt")
+weight = '{}{}'.format(os.getcwd(), os.getenv("YOLO_WEIGHT", "/yolo-obj_final.weights"))
+config = '{}{}'.format(os.getcwd(), os.getenv("YOLO_CONFIG", "/yolo-obj.cfg"))
+classPath = '{}{}'.format(os.getcwd(), os.getenv("YOLO_CLASS", "/classes.txt"))
 
 
 def crop_bounding_box(img, x, y, x_plus_w, y_plus_h):
