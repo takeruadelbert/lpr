@@ -153,3 +153,5 @@ fabric.properties
 *.jpg
 *.weights
 *.cfg
+
+log/*
