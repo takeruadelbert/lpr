@@ -97,5 +97,5 @@ class LicensePlateRecognition:
                 output["type"] = class_label
             self.draw_bounding_box(self.image, class_ids[i], confidences[i], round(x), round(y), round(x + w),
                                    round(y + h), result)
-
+            cv2.imwrite('{}'.format(DEFAULT_NAME_LPR_IMAGE_RESULT), self.image)
         return output

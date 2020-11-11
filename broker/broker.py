@@ -39,7 +39,6 @@ class Broker:
             token = data['token']
             self.logger.info('processing {} ...'.format(token))
             image_origin = self.get_image_from_storage(token)
-            cv2.imwrite('{}'.format(DEFAULT_NAME_LPR_IMAGE_RESULT), image_origin)
             self.lpr.set_image(image_origin)
             result = self.lpr.run()
             if result['type'] != UNKNOWN_VEHICLE and result['license_plate_number'] != UNDETECTED:
