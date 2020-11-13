@@ -97,6 +97,7 @@ class LicensePlateRecognition:
                 output["type"] = class_label
             self.draw_bounding_box(self.image, class_ids[i], confidences[i], round(x), round(y), round(x + w),
                                    round(y + h), result)
-            encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 70]
+            encode_param = [int(cv2.IMWRITE_JPEG_QUALITY),
+                            int(os.getenv("JPG_IMAGE_QUALITY", DEFAULT_JPG_IMAGE_QUALITY))]
             cv2.imwrite('{}'.format(DEFAULT_NAME_LPR_IMAGE_RESULT), self.image, encode_param)
         return output
