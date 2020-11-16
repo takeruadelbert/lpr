@@ -91,8 +91,9 @@ class LicensePlateRecognition:
             result = None
             if class_label.lower() == LICENSE_PLATE_LABEL:
                 detected_image = crop_bounding_box(self.image, round(x), round(y), round(x + w), round(y + h))
-                result = self.optical_character_recognition(detected_image)[0]
-                output["license_plate_number"] = result
+                result = self.optical_character_recognition(detected_image)
+                if result:
+                    output["license_plate_number"] = result[0]
             else:
                 output["type"] = class_label
             self.draw_bounding_box(self.image, class_ids[i], confidences[i], round(x), round(y), round(x + w),
