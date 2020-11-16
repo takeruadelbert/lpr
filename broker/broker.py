@@ -20,7 +20,7 @@ url_get_image = "{}:{}/{}".format(os.getenv("STORAGE_HOST"), os.getenv("STORAGE_
 class Broker:
     def __init__(self, logger):
         self.consumer = KafkaConsumer(consume_topic, bootstrap_servers=bootstrap_server,
-                                      group_id=consume_topic_group_id)
+                                      group_id=consume_topic_group_id, max_poll_records=KAFKA_MAX_POLL_RECORD)
         self.producer = KafkaProducer(bootstrap_servers=bootstrap_server,
                                       value_serializer=lambda v: json.dumps(v).encode('utf-8'))
         self.logger = logger
@@ -51,6 +51,7 @@ class Broker:
             self.logger.info('sending {} to queue'.format(produce_payload))
             self.produce(payload=produce_payload)
             self.logger.info('{} processed.'.format(token))
+            self.consumer.commit()
 
     def get_image_from_storage(self, token):
         payload = {'token': token}
