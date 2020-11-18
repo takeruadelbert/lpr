@@ -10,7 +10,9 @@ from storage.storage import api_post
 
 bootstrap_server = "{}:{}".format(os.getenv("KAFKA_HOST"), os.getenv("KAFKA_PORT"))
 consume_topic = os.getenv("KAFKA_PROCESS_TOPIC", "LPRProcess")
+consume_topic_image = os.getenv("KAFKA_PROCESS_IMAGE_TOPIC")
 consume_topic_group_id = os.getenv("KAFKA_PROCESS_TOPIC_GROUP_ID", "lpr-service")
+consume_topic_image_group_id = os.getenv("KAFKA_PROCESS_IMAGE_TOPIC_GROUP_ID")
 
 url_upload = "{}:{}/{}".format(os.getenv("STORAGE_HOST"), os.getenv("STORAGE_PORT"), os.getenv("STORAGE_UPLOAD_URL"))
 url_get_image = "{}:{}/{}".format(os.getenv("STORAGE_HOST"), os.getenv("STORAGE_PORT"),
@@ -19,8 +21,11 @@ url_get_image = "{}:{}/{}".format(os.getenv("STORAGE_HOST"), os.getenv("STORAGE_
 
 class Broker:
     def __init__(self, logger):
-        self.consumer = KafkaConsumer(consume_topic, bootstrap_servers=bootstrap_server,
+        self.consumer = KafkaConsumer(consume_topic, bootstrap_servers=bootstrap_server, consumer_timeout_ms=1000,
                                       group_id=consume_topic_group_id, max_poll_records=KAFKA_MAX_POLL_RECORD)
+        self.image_consumer = KafkaConsumer(consume_topic_image, bootstrap_servers=bootstrap_server,
+                                            group_id=consume_topic_image_group_id, consumer_timeout_ms=1000,
+                                            max_poll_records=KAFKA_MAX_POLL_RECORD)
         self.producer = KafkaProducer(bootstrap_servers=bootstrap_server,
                                       value_serializer=lambda v: json.dumps(v).encode('utf-8'))
         self.logger = logger
@@ -30,28 +35,58 @@ class Broker:
         print("Loaded.")
         self.logger.info('Loaded.')
         self.lpr = LicensePlateRecognition(self.reader)
+        self.lpr2 = LicensePlateRecognition(self.reader)
 
     def consume(self):
-        for message in self.consumer:
-            data = json.loads(message.value)
-            self.logger.info('consuming data {} from queue'.format(data))
-            gate_id = data['gate_id']
-            token = data['token']
-            self.logger.info('processing {} ...'.format(token))
-            image_origin = self.get_image_from_storage(token)
-            self.lpr.set_image(image_origin)
-            result = self.lpr.run()
-            if result['type'] != UNKNOWN_VEHICLE and result['license_plate_number'] != UNDETECTED:
-                token = self.upload_lpr_image_result()
-                result['token'] = token
-            produce_payload = {
-                'gate_id': gate_id,
-                'result': result,
-            }
-            self.logger.info('sending {} to queue'.format(produce_payload))
-            self.produce(payload=produce_payload)
-            self.logger.info('{} processed.'.format(token))
-            self.consumer.commit()
+        try:
+            for message in self.consumer:
+                data = json.loads(message.value)
+                self.logger.info('consuming data from {} queue : {}'.format(consume_topic, data))
+                gate_id = data['gate_id']
+                token = data['token']
+                self.logger.info('processing {} from {}...'.format(token, consume_topic))
+                image_origin = self.get_image_from_storage(token)
+                self.lpr.set_image(image_origin)
+                result = self.lpr.run()
+                if result['type'] != UNKNOWN_VEHICLE and result['license_plate_number'] != UNDETECTED:
+                    token = self.upload_lpr_image_result()
+                    result['token'] = token
+                produce_payload = {
+                    'gate_id': gate_id,
+                    'result': result,
+                }
+                self.logger.info('sending {} to queue'.format(produce_payload))
+                self.produce(produce_topic=os.getenv("KAFKA_RESULT_TOPIC"), payload=produce_payload)
+                self.logger.info('{} processed.'.format(token))
+                self.consumer.commit()
+        except Exception as error:
+            self.logger.error(error)
+
+    def consume_image(self):
+        print('bbb')
+        try:
+            for message in self.image_consumer:
+                data = json.loads(message.value)
+                self.logger.info('consuming data from {} Queue: {}'.format(consume_topic_image, data))
+                token = data['token']
+                ticket_number = data['ticket_number']
+                self.logger.info('processing {} from {}...'.format(token, consume_topic_image))
+                image_origin = self.get_image_from_storage(token)
+                self.lpr2.set_image(image_origin)
+                result = self.lpr2.run()
+                if result['type'] != UNKNOWN_VEHICLE and result['license_plate_number'] != UNDETECTED:
+                    token = self.upload_lpr_image_result()
+                    result['token'] = token
+                produce_payload = {
+                    'ticket_number': ticket_number,
+                    'result': result,
+                }
+                self.logger.info('sending {} to queue'.format(produce_payload))
+                self.produce(produce_topic=os.getenv("KAFKA_RESULT_IMAGE_TOPIC"), payload=produce_payload)
+                self.logger.info('{} processed.'.format(token))
+                self.image_consumer.commit()
+        except Exception as err:
+            self.logger.error(err)
 
     def get_image_from_storage(self, token):
         payload = {'token': token}
@@ -80,7 +115,7 @@ class Broker:
 
     def produce(self, **kwargs):
         try:
-            produce_topic = os.getenv("KAFKA_RESULT_TOPIC")
+            produce_topic = kwargs.get('produce_topic')
             payload = kwargs.get('payload')
             self.producer.send(produce_topic, payload)
             self.logger.info('payload sent to queue.')

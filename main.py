@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import re
 from logging.handlers import TimedRotatingFileHandler
@@ -22,8 +23,28 @@ def setup_log():
     logger.addHandler(handler)
 
 
-if __name__ == "__main__":
-    create_log_dir_if_does_not_exists('log')
-    setup_log()
-    broker = Broker(logger)
+create_log_dir_if_does_not_exists('log')
+setup_log()
+broker = Broker(logger)
+
+
+async def bg_task_consume():
+    await asyncio.sleep(1)
     broker.consume()
+
+
+async def bg_task_consume_image():
+    await asyncio.sleep(1)
+    broker.consume_image()
+
+
+async def main():
+    while True:
+        await bg_task_consume()
+        await bg_task_consume_image()
+
+
+if __name__ == "__main__":
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(main())
+    loop.run_forever()

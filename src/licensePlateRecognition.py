@@ -21,12 +21,13 @@ def get_output_layers(net):
 
 
 class LicensePlateRecognition:
-    def __init__(self, reader):
+    def __init__(self, reader, is_process_raw_image=False):
         self.reader = reader
         self.image = None
         self.width = None
         self.height = None
         self.classes = open(classPath).read().strip().split("\n")
+        self.is_process_raw_image = is_process_raw_image
 
     def set_image(self, image):
         self.image = image
@@ -100,5 +101,6 @@ class LicensePlateRecognition:
                                    round(y + h), result)
             encode_param = [int(cv2.IMWRITE_JPEG_QUALITY),
                             int(os.getenv("JPG_IMAGE_QUALITY", DEFAULT_JPG_IMAGE_QUALITY))]
-            cv2.imwrite('{}'.format(DEFAULT_NAME_LPR_IMAGE_RESULT), self.image, encode_param)
+            filename = DEFAULT_NAME_LPR_IMAGE_RESULT if not self.is_process_raw_image else DEFAULT_NAME_LPR_RAW_IMAGE_RESULT
+            cv2.imwrite('{}'.format(filename), self.image, encode_param)
         return output
