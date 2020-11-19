@@ -76,7 +76,7 @@ class Broker:
         self.lpr2.set_image(image_origin)
         result = self.lpr2.run()
         if result['type'] != UNKNOWN_VEHICLE and result['license_plate_number'] != UNDETECTED:
-            token = self.upload_lpr_image_result()
+            token = self.upload_lpr_image_result(True)
             result['token'] = token
         produce_payload = {
             'ticket_number': ticket_number,
@@ -98,8 +98,9 @@ class Broker:
             self.logger.error(response['message'])
         return None
 
-    def upload_lpr_image_result(self):
-        encoded_image = encode_image_to_base64(DEFAULT_NAME_LPR_IMAGE_RESULT)
+    def upload_lpr_image_result(self, is_process_raw_image=False):
+        filename = DEFAULT_NAME_LPR_IMAGE_RESULT if not is_process_raw_image else DEFAULT_NAME_LPR_RAW_IMAGE_RESULT
+        encoded_image = encode_image_to_base64(filename)
         payload = [{
             'filename': '{}'.format(DEFAULT_NAME_LPR_IMAGE_RESULT),
             'encoded_file': '{}{}'.format(DEFAULT_PREFIX_BASE64, encoded_image)
@@ -114,9 +115,9 @@ class Broker:
 
     def produce(self, **kwargs):
         try:
-            produce_topic = kwargs.get('produce_topic')
+            topic = kwargs.get('produce_topic')
             payload = kwargs.get('payload')
-            self.producer.send(produce_topic, payload)
+            self.producer.send(topic, payload)
             self.logger.info('payload sent to queue.')
         except Exception as err:
             self.logger.error("Produce Error : {}".format(err))
