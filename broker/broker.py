@@ -63,7 +63,6 @@ class Broker:
             self.logger.error(error)
 
     def consume_image(self):
-        print('bbb')
         try:
             for message in self.image_consumer:
                 data = json.loads(message.value)
