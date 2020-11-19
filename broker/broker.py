@@ -35,7 +35,7 @@ class Broker:
         print("Loaded.")
         self.logger.info('Loaded.')
         self.lpr = LicensePlateRecognition(self.reader)
-        self.lpr2 = LicensePlateRecognition(self.reader)
+        self.lpr2 = LicensePlateRecognition(self.reader, True)
 
     def consume(self):
         try:
