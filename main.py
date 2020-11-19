@@ -28,20 +28,14 @@ setup_log()
 broker = Broker(logger)
 
 
-async def bg_task_consume():
+async def background_task():
     await asyncio.sleep(1)
     broker.consume()
 
 
-async def bg_task_consume_image():
-    await asyncio.sleep(1)
-    broker.consume_image()
-
-
 async def main():
     while True:
-        await bg_task_consume()
-        await bg_task_consume_image()
+        await background_task()
 
 
 if __name__ == "__main__":
