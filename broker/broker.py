@@ -50,21 +50,22 @@ class Broker:
     def process_frame_result(self, data):
         self.logger.info('consuming data from {} queue : {}'.format(consume_topic, data))
         gate_id = data['gate_id']
-        token = data['token']
-        self.logger.info('processing {} from {}...'.format(token, consume_topic))
-        image_origin = self.get_image_from_storage(token)
+        token_input = data['token']
+        self.logger.info('processing {} from {}...'.format(token_input, consume_topic))
+        image_origin = self.get_image_from_storage(token_input)
         self.lpr.set_image(image_origin)
         result = self.lpr.run()
         if result['type'] != UNKNOWN_VEHICLE and result['license_plate_number'] != UNDETECTED:
-            token = self.upload_lpr_image_result()
-            result['token'] = token
+            token_output = self.upload_lpr_image_result()
+            result['token'] = token_output
         produce_payload = {
             'gate_id': gate_id,
             'result': result,
+            'token_input': token_input
         }
         self.logger.info('sending {} to queue'.format(produce_payload))
         self.produce(produce_topic=produce_topic, payload=produce_payload)
-        self.logger.info('{} processed.'.format(token))
+        self.logger.info('{} processed.'.format(token_input))
         self.consumer.commit()
 
     def process_image_result(self, data):
