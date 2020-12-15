@@ -1,0 +1,11 @@
+version: '2.4'
+services:
+  lpr:
+    container_name: lpr
+    image: takeruadelbert/lpr
+    command: ./run.sh -m http.server 7070
+    ports:
+      - 7070:7070
+    build:
+      context: .
+      dockerfile: docker/Dockerfile

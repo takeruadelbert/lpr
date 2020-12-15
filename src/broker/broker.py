@@ -4,9 +4,10 @@ import easyocr
 from kafka import KafkaConsumer
 from kafka import KafkaProducer
 
-from helper.generalHelper import decode_base64_to_image, encode_image_to_base64
+from src.helper.generalHelper import decode_base64_to_image, encode_image_to_base64
 from src.licensePlateRecognition import *
-from storage.storage import api_post
+from src.misc.value import KAFKA_MAX_POLL_RECORD, HTTP_STATUS_OK, HTTP_STATUS_NOT_FOUND, DEFAULT_PREFIX_BASE64
+from src.storage.storage import api_post
 
 bootstrap_server = "{}:{}".format(os.getenv("KAFKA_HOST"), os.getenv("KAFKA_PORT"))
 consume_topic = os.getenv("KAFKA_PROCESS_TOPIC", "LPRProcess")

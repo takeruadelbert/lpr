@@ -3,9 +3,9 @@ import logging
 import re
 from logging.handlers import TimedRotatingFileHandler
 
-from broker.broker import Broker
-from helper.generalHelper import create_log_dir_if_does_not_exists
-from misc.value import DEFAULT_APP_NAME
+from src.broker.broker import Broker
+from src.helper.generalHelper import create_log_dir_if_does_not_exists
+from src.misc.value import DEFAULT_APP_NAME
 
 logger = logging.getLogger(DEFAULT_APP_NAME)
 

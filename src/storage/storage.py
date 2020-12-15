@@ -2,7 +2,7 @@ import json
 
 import requests
 
-from misc.value import HTTP_STATUS_BAD_REQUEST, HTTP_STATUS_OK
+from src.misc.value import HTTP_STATUS_BAD_REQUEST, HTTP_STATUS_OK
 
 
 def api_post(url, payload):

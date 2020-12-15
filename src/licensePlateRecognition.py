@@ -3,11 +3,14 @@ import os
 import cv2
 import numpy as np
 
-from misc.value import *
+from src.misc.value import DATA_ALLOW_LIST, CONFIDENCE_LIMIT, DEFAULT_SCALE, LICENSE_PLATE_LABEL, \
+    DEFAULT_JPG_IMAGE_QUALITY, DEFAULT_NAME_LPR_IMAGE_RESULT, DEFAULT_NAME_LPR_RAW_IMAGE_RESULT, UNDETECTED, \
+    UNKNOWN_VEHICLE
 
-weight = '{}{}'.format(os.getcwd(), os.getenv("YOLO_WEIGHT", "/yolo-obj_final.weights"))
-config = '{}{}'.format(os.getcwd(), os.getenv("YOLO_CONFIG", "/yolo-obj.cfg"))
-classPath = '{}{}'.format(os.getcwd(), os.getenv("YOLO_CLASS", "/classes.txt"))
+parent_dir = os.getcwd()
+weight = '{}{}'.format(parent_dir, os.getenv("YOLO_WEIGHT", "/yolo-obj_final.weights"))
+config = '{}{}'.format(parent_dir, os.getenv("YOLO_CONFIG", "/yolo-obj.cfg"))
+classPath = '{}{}'.format(parent_dir, os.getenv("YOLO_CLASS", "/classes.txt"))
 
 
 def crop_bounding_box(img, x, y, x_plus_w, y_plus_h):
