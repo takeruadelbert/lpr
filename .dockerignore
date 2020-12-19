@@ -1,0 +1,9 @@
+docker/*
+log/*
+src/log/*
+requirement/*
+*.yml
+*.env
+*.sh
+*.jpg
+*.md

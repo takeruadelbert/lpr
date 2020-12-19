@@ -1,16 +1,14 @@
-FROM ubuntu
-RUN apt-get update && apt-get install -y --no-install-recommends software-properties-common && \
-    add-apt-repository ppa:deadsnakes/ppa && apt-get install -y --no-install-recommends python3.8-minimal && \
-    apt-get install -y --no-install-recommends libgl1-mesa-glx && \
-    apt-get install -y --no-install-recommends python3-pip && rm -rf /var/lib/apt/lists/* && \
-    ln -s /usr/bin/pip3 /usr/bin/pip && ln -s /usr/bin/python3.8 /usr/bin/python && pip3 install virtualenv
-ENV HOME=/home/lpr
-COPY broker ${HOME}/broker/
-COPY helper ${HOME}/helper/
-COPY misc ${HOME}/misc/
-COPY requirement ${HOME}/requirement/
-COPY src ${HOME}/src/
-COPY storage ${HOME}/storage/
-COPY ["environment.env", "install-package.sh","main.py", "run.sh", "classes.txt", "yolo-obj.cfg", "yolo-obj_final.weights", "${HOME}/"]
-WORKDIR ${HOME}
-RUN chmod +x install-package.sh && chmod +x run.sh && ./install-package.sh
+FROM python:3.8-slim
+
+RUN apt-get update && apt-get install curl -y && apt-get install libgl1-mesa-glx -y && apt-get install libglib2.0-0 -y
+RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | POETRY_HOME=/opt/poetry python && \
+    cd /usr/local/bin && \
+    ln -s /opt/poetry/bin/poetry && \
+    poetry config virtualenvs.create false
+
+ENV REPO_HOME=/home/lpr
+RUN mkdir -p ${REPO_HOME}
+COPY . ${REPO_HOME}
+WORKDIR ${REPO_HOME}
+
+RUN poetry install --no-dev
