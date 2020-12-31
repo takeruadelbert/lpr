@@ -100,6 +100,7 @@ class LicensePlateRecognition:
                     output["license_plate_number"] = result[0]
             else:
                 output["type"] = class_label
+            output["confidence"] = confidences[i]
             self.draw_bounding_box(self.image, class_ids[i], confidences[i], round(x), round(y), round(x + w),
                                    round(y + h), result)
             encode_param = [int(cv2.IMWRITE_JPEG_QUALITY),
