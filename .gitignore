@@ -156,3 +156,4 @@ fabric.properties
 
 log/*
 src/log/*
+model/*

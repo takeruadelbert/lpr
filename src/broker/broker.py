@@ -19,6 +19,7 @@ produce_image_topic = os.getenv("KAFKA_RESULT_IMAGE_TOPIC", "LPRImageServiceResu
 url_upload = "{}:{}/{}".format(os.getenv("STORAGE_HOST"), os.getenv("STORAGE_PORT"), os.getenv("STORAGE_UPLOAD_URL"))
 url_get_image = "{}:{}/{}".format(os.getenv("STORAGE_HOST"), os.getenv("STORAGE_PORT"),
                                   os.getenv("STORAGE_GET_IMAGE_URL"))
+model_path = "{}/{}".format(os.getcwd(), "model/")
 
 
 class Broker:
@@ -31,7 +32,7 @@ class Broker:
         self.logger = logger
         self.logger.info('Loading Reader ...')
         print("Loading Reader ...")
-        self.reader = easyocr.Reader(['id'], gpu=True)
+        self.reader = easyocr.Reader(['id'], gpu=True, download_enabled=False, model_storage_directory=model_path)
         print("Loaded.")
         self.logger.info('Loaded.')
         self.lpr = LicensePlateRecognition(self.reader)
