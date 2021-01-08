@@ -1,13 +1,11 @@
 version: '3.0'
 services:
-  python:
-    image: python:3.8-slim
   lpr:
     runtime: nvidia
     environment:
       - NVIDIA_VISIBLE_DEVICES=all
-    container_name: lpr
-    image: takeruadelbert/lpr
+    container_name: lpr-container
+    image: python:3.8-slim
     command: poetry run python main.py -m http.server 7070
     ports:
       - 7070:7070
